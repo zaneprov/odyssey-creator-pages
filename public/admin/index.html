@@ -128,10 +128,15 @@ f.name.addEventListener("input", () => { if (!$("#pv img")) setPreview(null, f.n
 $("#file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const img = await createImageBitmap(file);
+  let img;
+  try { img = await createImageBitmap(file); }
+  catch { e.target.value = ""; return msg("That image format can't be read here (iPhone HEIC photos often can't). Save it as JPG or PNG and try again.", "err"); }
   const s = Math.min(img.width, img.height), size = Math.min(480, s);
   const cv = document.createElement("canvas"); cv.width = cv.height = size;
-  cv.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size); // transparent logos would otherwise turn black
+  ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+  msg("Photo added. Click Save to upload it.");
   photoData = cv.toDataURL("image/jpeg", 0.85);
   setPreview(photoData);
 });
