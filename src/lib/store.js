@@ -8,7 +8,7 @@ export const slugify = (s) =>
 export const refFrom = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12) || "ODYSSEY";
 
 export function kv(env) {
-  if (!env.CREATORS) throw new Error("KV namespace CREATORS is not bound. Add it in Cloudflare Pages > Settings > Bindings.");
+  if (!env.CREATORS) throw new Error("KV namespace CREATORS is not bound. Check the kv_namespaces block in wrangler.toml.");
   return env.CREATORS;
 }
 
