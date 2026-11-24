@@ -1,0 +1,9 @@
+name = "odyssey-creator-pages"
+pages_build_output_dir = "public"
+compatibility_date = "2026-11-01"
+
+# The KV namespace and ADMIN_PASSWORD are set in the Cloudflare dashboard
+# (Pages project > Settings). This block is only used for local testing.
+[[kv_namespaces]]
+binding = "CREATORS"
+id = "local-dev"

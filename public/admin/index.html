@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Creator Page Builder · Odyssey</title>
+<link rel="icon" href="/assets/odyssey_sailboat_blue_transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a111d;--panel:#0f1a2b;--field:#13213a;--line:#22324d;--text:#eef2f8;--muted:#8d9bb2;--blue:#4076e4;--lime:#dbff00;--red:#ff6b6b;--display:'Barlow Condensed','Arial Narrow',sans-serif;--body:'Barlow',Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:var(--body);background:var(--bg);color:var(--text);line-height:1.45}
+.wrap{max-width:1110px;margin:0 auto;padding:0 20px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:26px 0;border-bottom:1px solid var(--line);gap:12px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:38px}
+.brand b{font-family:var(--display);font-size:22px;letter-spacing:.06em;text-transform:uppercase}
+.brand span{font-family:var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-size:14px;border-left:1px solid var(--line);padding-left:14px}
+.top a{color:var(--muted);font-size:15px}
+h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(44px,8vw,76px);line-height:.95;margin-top:30px}
+.sub{color:#c6d0de;font-size:18px;max-width:640px;margin-top:10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px;margin-top:30px}
+.lbl{font-family:var(--display);letter-spacing:.2em;text-transform:uppercase;font-size:14px;color:#b9c4d6}
+.lbl small{font-family:var(--body);letter-spacing:0;text-transform:none;color:var(--muted);font-size:14px;margin-left:8px}
+.row{display:grid;gap:18px;margin-top:20px}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+label{display:block}
+input,textarea{width:100%;margin-top:8px;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--field);color:var(--text);font:inherit;font-size:16px}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+input[type=color]{padding:4px;height:50px}
+.photo{display:flex;align-items:center;gap:16px;margin-top:8px}
+.photo .pv{width:70px;height:70px;border-radius:50%;background:var(--field);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:26px;overflow:hidden;flex:none}
+.photo .pv img{width:100%;height:100%;object-fit:cover}
+.btn{font:inherit;font-weight:600;font-size:16px;border-radius:999px;padding:12px 22px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--lime);color:#0a111d;border-color:var(--lime);font-size:18px;padding:14px 30px}
+.btn.sm{padding:8px 16px;font-size:14px}
+.btn.danger{color:var(--red);border-color:transparent}
+.actions{display:flex;gap:12px;align-items:center;margin-top:26px;flex-wrap:wrap}
+details summary{cursor:pointer;color:var(--lime);font-family:var(--display);letter-spacing:.2em;text-transform:uppercase;font-size:14px;margin-top:26px}
+.msg{margin-top:14px;font-size:15px}.msg.err{color:var(--red)}.msg.ok{color:var(--lime)}
+.list-head{display:flex;justify-content:space-between;align-items:center}
+.item{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .pv{width:46px;height:46px;border-radius:50%;background:var(--field);display:flex;align-items:center;justify-content:center;font-family:var(--display);overflow:hidden;flex:none}
+.item .pv img{width:100%;height:100%;object-fit:cover}
+.item .who{flex:1;min-width:0}
+.item .who b{font-size:18px}
+.item .who em{font-style:normal;color:var(--muted);font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:13px;margin-left:8px}
+.item .who a{display:block;color:var(--lime);font-family:var(--display);letter-spacing:.06em;text-transform:uppercase;font-size:15px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.empty{color:var(--muted);padding:20px 0}
+@media(max-width:760px){.c2,.c3{grid-template-columns:1fr}.item{flex-wrap:wrap}.item .btns{width:100%;justify-content:flex-start}.panel{padding:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><img src="/assets/odyssey_sailboat_blue_transparent.png" alt=""><b>Odyssey</b><span>Creators</span></div>
+    <a href="/" target="_blank" rel="noopener">View main page &rarr;</a>
+  </div>
+  <h1>Creator Page Builder</h1>
+  <p class="sub">Fill in a creator, click Generate, then copy the link and send it. Each creator gets a player page and a pitch page that goes live instantly.</p>
+
+  <form class="panel" id="f" autocomplete="off">
+    <div class="lbl" id="formTitle">New creator</div>
+    <div class="row c2">
+      <label><span class="lbl">Creator name *</span><input name="name" required placeholder="e.g. Matt Sheldon"></label>
+      <label><span class="lbl">Handle</span><input name="handle" placeholder="@handle"></label>
+    </div>
+    <div class="row c3">
+      <label><span class="lbl">Platform</span><input name="platform" placeholder="Instagram, TikTok, YouTube"></label>
+      <label><span class="lbl">Followers</span><input name="followers" placeholder="e.g. 120K"></label>
+      <label><span class="lbl">Referral code <small>auto</small></span><input name="refCode" placeholder="from name"></label>
+    </div>
+    <div class="row">
+      <label><span class="lbl">Hook line <small>the big headline, in their voice</small></span><input name="hook" placeholder="I made it to college soccer. Now my team helps you do it too."></label>
+      <label><span class="lbl">Intro <small>one or two lines under the headline</small></span><textarea name="intro" placeholder="Why they partnered with Odyssey."></textarea></label>
+    </div>
+    <div class="row">
+      <div><span class="lbl">Photo <small>square works best; resized automatically</small></span>
+        <div class="photo"><div class="pv" id="pv">?</div><input type="file" id="file" accept="image/*" style="max-width:320px"><button type="button" class="btn sm danger" id="rmPhoto" hidden>Remove</button></div>
+      </div>
+    </div>
+    <details>
+      <summary>+ Advanced: commission, link, colour, notes</summary>
+      <div class="row c3">
+        <label><span class="lbl">Commission % <small>pitch page</small></span><input name="commissionPct" type="number" min="0" max="100" step="1" placeholder="15"></label>
+        <label><span class="lbl">Avg sale $ <small>pitch page</small></span><input name="avgSale" type="number" min="0" step="100" placeholder="3000"></label>
+        <label><span class="lbl">Accent colour</span><input name="accent" type="color" value="#4076e4"></label>
+      </div>
+      <div class="row c2">
+        <label><span class="lbl">Link <small>/c/&hellip; auto from name</small></span><input name="slug" placeholder="matt-sheldon"></label>
+        <label><span class="lbl">Private notes <small>never shown on pages</small></span><input name="notes" placeholder="Contact, status, deal terms"></label>
+      </div>
+    </details>
+    <div class="actions">
+      <button class="btn primary" type="submit" id="go">Generate page</button>
+      <button class="btn" type="button" id="cancel" hidden>Cancel edit</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <div class="panel">
+    <div class="list-head"><div class="lbl">Your creators</div><button class="btn sm" id="refresh">Refresh</button></div>
+    <div id="list"><div class="empty">Loading&hellip;</div></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const f = $("#f");
+let editing = null, photoData, creators = [];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const initials = (n) => String(n || "?").split(/\s+/).slice(0, 2).map((p) => p[0] || "").join("").toUpperCase();
+const link = (c) => `${location.origin}/c/${c.slug}`;
+function msg(t, kind) { const m = $("#msg"); m.textContent = t || ""; m.className = "msg " + (kind || ""); }
+
+function setPreview(src, name) {
+  $("#pv").innerHTML = src ? `<img src="${esc(src)}" alt="">` : esc(initials(name));
+  $("#rmPhoto").hidden = !src;
+}
+f.name.addEventListener("input", () => { if (!$("#pv img")) setPreview(null, f.name.value); });
+
+$("#file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = await createImageBitmap(file);
+  const s = Math.min(img.width, img.height), size = Math.min(480, s);
+  const cv = document.createElement("canvas"); cv.width = cv.height = size;
+  cv.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+  photoData = cv.toDataURL("image/jpeg", 0.85);
+  setPreview(photoData);
+});
+$("#rmPhoto").addEventListener("click", () => { photoData = null; $("#file").value = ""; setPreview(null, f.name.value); });
+
+function resetForm() {
+  editing = null; photoData = undefined; f.reset(); f.accent.value = "#4076e4";
+  f.slug.disabled = false; $("#formTitle").textContent = "New creator"; $("#go").textContent = "Generate page";
+  $("#cancel").hidden = true; setPreview(null, "");
+}
+$("#cancel").addEventListener("click", () => { resetForm(); msg(""); });
+
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f).entries());
+  if (editing) data.slug = editing;
+  data.isNew = !editing;
+  if (photoData !== undefined) data.photo = photoData;
+  $("#go").disabled = true; msg("Saving…");
+  try {
+    const r = await fetch("/api/creators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    const out = await r.json();
+    if (!r.ok) throw new Error(out.error || "Save failed");
+    await navigator.clipboard?.writeText(link(out)).catch(() => {});
+    msg(`Live at ${link(out)} (copied).`, "ok");
+    resetForm(); load();
+  } catch (err) { msg(err.message, "err"); }
+  $("#go").disabled = false;
+});
+
+function edit(slug) {
+  const c = creators.find((x) => x.slug === slug); if (!c) return;
+  resetForm(); editing = slug;
+  for (const k of ["name", "handle", "platform", "followers", "refCode", "hook", "intro", "commissionPct", "avgSale", "accent", "slug", "notes"]) if (f[k]) f[k].value = c[k] ?? "";
+  f.slug.disabled = true;
+  setPreview(c.hasPhoto ? `/photo/${c.slug}?v=${encodeURIComponent(c.updatedAt)}` : null, c.name);
+  $("#formTitle").textContent = `Editing ${c.name}`; $("#go").textContent = "Save changes"; $("#cancel").hidden = false;
+  msg(""); f.scrollIntoView({ behavior: "smooth" });
+}
+async function copy(slug, btn) {
+  await navigator.clipboard.writeText(`${location.origin}/c/${slug}`);
+  const t = btn.textContent; btn.textContent = "Copied"; setTimeout(() => (btn.textContent = t), 1200);
+}
+async function del(slug) {
+  if (!confirm(`Delete the page for ${slug}? The link will stop working.`)) return;
+  await fetch(`/api/creators/${encodeURIComponent(slug)}`, { method: "DELETE" }); load();
+}
+
+async function load() {
+  const el = $("#list");
+  try {
+    const r = await fetch("/api/creators"); const out = await r.json();
+    if (!r.ok) throw new Error(out.error || "Could not load");
+    creators = out;
+    el.innerHTML = out.length ? out.map((c) => `
+      <div class="item">
+        <div class="pv">${c.hasPhoto ? `<img src="/photo/${esc(c.slug)}?v=${esc(encodeURIComponent(c.updatedAt))}" alt="">` : esc(initials(c.name))}</div>
+        <div class="who"><b>${esc(c.name)}</b><em>${esc(c.refCode)}${c.platform ? " · " + esc(c.platform) : ""}</em><a href="/c/${esc(c.slug)}" target="_blank" rel="noopener">${esc(location.host)}/c/${esc(c.slug)}</a></div>
+        <div class="btns">
+          <button class="btn sm" data-a="edit" data-s="${esc(c.slug)}">Edit</button>
+          <button class="btn sm" data-a="copy" data-s="${esc(c.slug)}">Copy</button>
+          <a class="btn sm" href="/c/${esc(c.slug)}" target="_blank" rel="noopener">Open</a>
+          <a class="btn sm" href="/c/${esc(c.slug)}/pitch" target="_blank" rel="noopener">Pitch</a>
+          <button class="btn sm danger" data-a="del" data-s="${esc(c.slug)}" aria-label="Delete">&times;</button>
+        </div>
+      </div>`).join("") : '<div class="empty">No creators yet. Add the first one above.</div>';
+  } catch (err) { el.innerHTML = `<div class="empty msg err">${esc(err.message)}</div>`; }
+}
+$("#list").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-a]"); if (!b) return;
+  const s = b.dataset.s;
+  if (b.dataset.a === "edit") edit(s); else if (b.dataset.a === "copy") copy(s, b); else if (b.dataset.a === "del") del(s);
+});
+$("#refresh").addEventListener("click", load);
+resetForm(); load();
+</script>
+</body>
+</html>
