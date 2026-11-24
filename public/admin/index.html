@@ -128,15 +128,26 @@ f.name.addEventListener("input", () => { if (!$("#pv img")) setPreview(null, f.n
 $("#file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  let img;
-  try { img = await createImageBitmap(file); }
-  catch { e.target.value = ""; return msg("That image format can't be read here (iPhone HEIC photos often can't). Save it as JPG or PNG and try again.", "err"); }
-  const s = Math.min(img.width, img.height), size = Math.min(480, s);
-  const cv = document.createElement("canvas"); cv.width = cv.height = size;
+  // Load through an <img> so SVG logos work too (createImageBitmap rejects SVG).
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  try { img.src = url; await img.decode(); }
+  catch { URL.revokeObjectURL(url); e.target.value = ""; return msg("That image format can't be read here (iPhone HEIC photos often can't). Save it as JPG, PNG or SVG and try again.", "err"); }
+  const w = img.naturalWidth || 480, h = img.naturalHeight || 480;
+  const size = 480, cv = document.createElement("canvas"); cv.width = cv.height = size;
   const ctx = cv.getContext("2d");
   ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size); // transparent logos would otherwise turn black
-  ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
-  msg("Photo added. Click Save to upload it.");
+  if (/png|svg|gif|webp/.test(file.type)) {
+    // Logos: fit the whole thing inside the circle with padding, no cropping.
+    const k = (size * 0.72) / Math.max(w, h), dw = w * k, dh = h * k;
+    ctx.drawImage(img, (size - dw) / 2, (size - dh) / 2, dw, dh);
+  } else {
+    // Photos: fill the circle, cropping the centre square.
+    const s = Math.min(w, h);
+    ctx.drawImage(img, (w - s) / 2, (h - s) / 2, s, s, 0, 0, size, size);
+  }
+  URL.revokeObjectURL(url);
+  msg("Photo added. Click Generate page to save it.");
   photoData = cv.toDataURL("image/jpeg", 0.85);
   setPreview(photoData);
 });
