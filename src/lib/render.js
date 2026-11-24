@@ -13,7 +13,14 @@ export function formLink(env, ref) {
   if (!s.formRefEntry) return s.formUrl;
   const u = new URL(s.formUrl);
   u.searchParams.set("usp", "pp_url");
-  u.searchParams.set(s.formRefEntry, ref);
+  // "entry.123:other" = a multiple-choice question; put the code in its "Other" box.
+  const [entry, mode] = s.formRefEntry.trim().split(":");
+  if (mode === "other") {
+    u.searchParams.set(entry, "__other_option__");
+    u.searchParams.set(`${entry}.other_option_response`, ref);
+  } else {
+    u.searchParams.set(entry, ref);
+  }
   return u.toString();
 }
 

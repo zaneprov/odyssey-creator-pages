@@ -15,7 +15,7 @@ Runs as one Cloudflare Worker with static assets. Creator records and photos are
 2. **Set the builder password.** Worker → Settings → Variables and Secrets → Add. Type **Secret**, name `ADMIN_PASSWORD`, value of your choice. Username is `odyssey` (override with an `ADMIN_USER` variable).
 3. **Lead form.** Same place, type Text:
    - `FORM_URL`: the Google Form link (`https://docs.google.com/forms/d/e/.../viewform`)
-   - `FORM_REF_ENTRY`: the prefill id of the "Referral code" question, e.g. `entry.123456789` (form ⋮ → Get pre-filled link)
+   - `FORM_REF_ENTRY`: the prefill id of the "Referral code" question, e.g. `entry.123456789` (form ⋮ → Get pre-filled link). If the question is multiple choice with an "Other" option, add `:other`, e.g. `entry.123456789:other`
    - `VIDEO_URL` (optional): a YouTube or Loom link for the testimonial video
 4. **Custom domain.** Worker → Settings → Domains & Routes → Add → Custom domain.
 
