@@ -1,11 +1,13 @@
 // Creator records live in the Cloudflare KV namespace bound as CREATORS.
-// creator:<slug> -> JSON record, photo:<slug> -> JPEG bytes.
+// creator:<slug> -> JSON record, photo:<slug> / logo:<slug> -> image bytes.
 
 export const slugify = (s) =>
   String(s || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
 
 export const refFrom = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12) || "ODYSSEY";
+
+const hex = (v) => (/^#[0-9a-fA-F]{6}$/.test(String(v || "").trim()) ? String(v).trim().toLowerCase() : "");
 
 export function kv(env) {
   if (!env.CREATORS) throw new Error("KV namespace CREATORS is not bound. Check the kv_namespaces block in wrangler.toml.");
@@ -49,21 +51,28 @@ export async function saveCreator(env, input) {
     refCode: refFrom(input.refCode || name),
     commissionPct: num(input.commissionPct, 15),
     avgSale: num(input.avgSale, 3000),
-    accent: /^#[0-9a-fA-F]{6}$/.test(input.accent || "") ? input.accent : "#4076e4",
+    accent: hex(input.accent) || "#4076e4",
+    website: String(input.website || "").trim(),
+    brandColor: hex(input.brandColor),
+    brandDark: hex(input.brandDark),
     notes: String(input.notes || "").trim(),
     hasPhoto: prev?.hasPhoto || false,
+    hasLogo: prev?.hasLogo || false,
     createdAt: prev?.createdAt || now,
     updatedAt: now,
   };
-  if (input.photo === null) rec.hasPhoto = false;
-  if (typeof input.photo === "string" && input.photo.startsWith("data:image/")) {
-    const b64 = input.photo.split(",")[1];
-    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    if (bytes.length > 2_000_000) throw new Error("Photo is too large (max 2MB after resize)");
-    await kv(env).put(`photo:${slug}`, bytes, { metadata: { type: input.photo.slice(5, input.photo.indexOf(";")) } });
-    rec.hasPhoto = true;
+  for (const kind of ["photo", "logo"]) {
+    const flag = kind === "photo" ? "hasPhoto" : "hasLogo";
+    const v = input[kind];
+    if (v === null) rec[flag] = false;
+    if (typeof v === "string" && v.startsWith("data:image/")) {
+      const bytes = Uint8Array.from(atob(v.split(",")[1]), (c) => c.charCodeAt(0));
+      if (bytes.length > 3_000_000) throw new Error(`The ${kind} is too large (max 3MB after resize)`);
+      await kv(env).put(`${kind}:${slug}`, bytes, { metadata: { type: v.slice(5, v.indexOf(";")) } });
+      rec[flag] = true;
+    }
+    if (!rec[flag]) await kv(env).delete(`${kind}:${slug}`);
   }
-  if (!rec.hasPhoto) await kv(env).delete(`photo:${slug}`);
   await kv(env).put(`creator:${slug}`, JSON.stringify(rec));
   return rec;
 }
@@ -71,4 +80,5 @@ export async function saveCreator(env, input) {
 export async function deleteCreator(env, slug) {
   await kv(env).delete(`creator:${slug}`);
   await kv(env).delete(`photo:${slug}`);
+  await kv(env).delete(`logo:${slug}`);
 }

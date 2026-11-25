@@ -2,6 +2,7 @@
 // pages and the static assets in /public.
 import { playerPage, pitchPage, notFound } from "./lib/render.js";
 import { getCreator, listCreators, saveCreator, deleteCreator, kv } from "./lib/store.js";
+import { scrapeSite, scrapeInstagram, proxyImage } from "./lib/brand.js";
 
 const PROTECTED = /^\/(admin|api)(\/|$)/;
 const json = (d, s = 200) => new Response(JSON.stringify(d), { status: s, headers: { "Content-Type": "application/json" } });
@@ -59,6 +60,19 @@ async function route(request, env) {
     return json({ error: "Method not allowed" }, 405);
   }
 
+  // Brand pull: candidate logos, photos and colours from a creator's website / Instagram.
+  if (path === "/api/brand" && m === "POST") {
+    const { website, handle } = await request.json().catch(() => ({}));
+    const [site, ig] = await Promise.all([
+      website ? scrapeSite(website).then((v) => ({ ok: v }), (e) => ({ err: e.message })) : Promise.resolve({}),
+      handle ? scrapeInstagram(handle) : Promise.resolve(null),
+    ]);
+    return json({ site: site.ok || null, siteError: site.err || null, instagram: ig });
+  }
+  if (path === "/api/img" && m === "GET") {
+    try { return await proxyImage(url.searchParams.get("url")); } catch (e) { return new Response("Could not load image", { status: 502 }); }
+  }
+
   // Public pages
   if (m === "GET" || m === "HEAD") {
     if (path === "/") return html(playerPage(null, env), 200, "public, max-age=300");
@@ -72,8 +86,8 @@ async function route(request, env) {
       res.headers.set("X-Robots-Tag", "noindex");
       return res;
     }
-    if ((r = path.match(/^\/photo\/([\w-]+)$/))) {
-      const { value, metadata } = await kv(env).getWithMetadata(`photo:${r[1]}`, { type: "arrayBuffer" });
+    if ((r = path.match(/^\/(photo|logo)\/([\w-]+)$/))) {
+      const { value, metadata } = await kv(env).getWithMetadata(`${r[1]}:${r[2]}`, { type: "arrayBuffer" });
       if (!value) return new Response("Not found", { status: 404 });
       return new Response(value, { headers: { "Content-Type": metadata?.type || "image/jpeg", "Cache-Control": "public, max-age=86400" } });
     }

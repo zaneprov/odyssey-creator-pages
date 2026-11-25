@@ -35,6 +35,21 @@ input[type=color]{padding:4px;height:50px}
 .photo{display:flex;align-items:center;gap:16px;margin-top:8px}
 .photo .pv{width:70px;height:70px;border-radius:50%;background:var(--field);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:26px;overflow:hidden;flex:none}
 .photo .pv img{width:100%;height:100%;object-fit:cover}
+.brandbox{border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:22px;background:#0c1626}
+.pull{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.pull label{flex:1;min-width:220px}
+.opts{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.opt{width:92px;height:92px;border-radius:10px;border:2px solid var(--line);background:#fff;padding:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.opt img{max-width:100%;max-height:100%;object-fit:contain}.opt.photo img{width:100%;height:100%;object-fit:cover}.opt.photo{padding:0}
+.opt:hover,.opt.on{border-color:var(--lime)}
+.sw{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);cursor:pointer}.sw:hover{border-color:#fff}
+.slot{display:flex;gap:14px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.slot .pv{width:110px;height:110px;border-radius:12px;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;color:#8d9bb2;font-size:13px;text-align:center}
+.slot .pv img{max-width:100%;max-height:100%;object-fit:contain}.slot .pv.ph img{width:100%;height:100%;object-fit:cover}
+.slot .ctl{display:flex;flex-direction:column;gap:8px;flex:1;min-width:200px}
+.slot input[type=file]{margin-top:0;padding:10px}
+.colors{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.colors label{display:flex;align-items:center;gap:10px}.colors input[type=color]{width:60px;margin:0}
+.hint{color:var(--muted);font-size:14px;margin-top:6px}
 .btn{font:inherit;font-weight:600;font-size:16px;border-radius:999px;padding:12px 22px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;text-decoration:none;display:inline-block}
 .btn.primary{background:var(--lime);color:#0a111d;border-color:var(--lime);font-size:18px;padding:14px 30px}
 .btn.sm{padding:8px 16px;font-size:14px}
@@ -80,17 +95,43 @@ details summary{cursor:pointer;color:var(--lime);font-family:var(--display);lett
       <label><span class="lbl">Hook line <small>the big headline, in their voice</small></span><input name="hook" placeholder="I made it to college soccer. Now my team helps you do it too."></label>
       <label><span class="lbl">Intro <small>one or two lines under the headline</small></span><textarea name="intro" placeholder="Why they partnered with Odyssey."></textarea></label>
     </div>
-    <div class="row">
-      <div><span class="lbl">Photo <small>square works best; resized automatically</small></span>
-        <div class="photo"><div class="pv" id="pv">?</div><input type="file" id="file" accept="image/*" style="max-width:320px"><button type="button" class="btn sm danger" id="rmPhoto" hidden>Remove</button></div>
+    <div class="brandbox">
+      <div class="lbl">Their brand <small>pull it from their website, then pick or swap anything</small></div>
+      <div class="pull row" style="margin-top:12px">
+        <label><span class="lbl">Website</span><input name="website" placeholder="e.g. 5050futbol.com"></label>
+        <button type="button" class="btn" id="pull">Pull from website</button>
       </div>
+      <p class="hint">Also tries their Instagram profile photo from the handle above. Instagram often blocks this, so upload a photo if it doesn't show.</p>
+      <div id="pullOut" hidden>
+        <div class="row"><div><span class="lbl">Logos found <small>click to use</small></span><div class="opts" id="logoOpts"></div></div></div>
+        <div class="row"><div><span class="lbl">Photos found <small>click to use</small></span><div class="opts" id="photoOpts"></div></div></div>
+        <div class="row"><div><span class="lbl">Colours found <small>click to use as the brand colour</small></span><div class="opts" id="colorOpts"></div></div></div>
+      </div>
+      <div class="row c2">
+        <div><span class="lbl">Logo <small>shown in the header</small></span>
+          <div class="slot"><div class="pv" id="logoPv">No logo</div>
+            <div class="ctl"><input type="file" id="logoFile" accept="image/*,.svg"><input id="logoUrl" placeholder="or paste an image link"><button type="button" class="btn sm danger" id="logoRm" hidden>Remove logo</button></div></div>
+        </div>
+        <div><span class="lbl">Photo <small>the big image at the top</small></span>
+          <div class="slot"><div class="pv ph" id="photoPv">No photo</div>
+            <div class="ctl"><input type="file" id="photoFile" accept="image/*"><input id="photoUrl" placeholder="or paste an image link"><button type="button" class="btn sm danger" id="photoRm" hidden>Remove photo</button></div></div>
+        </div>
+      </div>
+      <div class="row"><div><span class="lbl">Colours</span>
+        <div class="colors">
+          <label><input type="color" id="bcPick" value="#4076e4"><span>Brand colour<br><small class="hint" id="bcTxt">Odyssey default</small></span></label>
+          <label><input type="color" id="bdPick" value="#0b1626"><span>Background<br><small class="hint" id="bdTxt">auto, a dark shade of the brand colour</small></span></label>
+          <button type="button" class="btn sm" id="colorReset">Use Odyssey colours</button>
+        </div>
+        <input type="hidden" name="brandColor"><input type="hidden" name="brandDark">
+      </div></div>
     </div>
     <details>
-      <summary>+ Advanced: commission, link, colour, notes</summary>
-      <div class="row c3">
+      <summary>+ Advanced: commission, link, notes</summary>
+      <div class="row c2">
         <label><span class="lbl">Commission % <small>pitch page</small></span><input name="commissionPct" type="number" min="0" max="100" step="1" placeholder="15"></label>
         <label><span class="lbl">Avg sale $ <small>pitch page</small></span><input name="avgSale" type="number" min="0" step="100" placeholder="3000"></label>
-        <label><span class="lbl">Accent colour</span><input name="accent" type="color" value="#4076e4"></label>
+        <input name="accent" type="hidden" value="#4076e4">
       </div>
       <div class="row c2">
         <label><span class="lbl">Link <small>/c/&hellip; auto from name</small></span><input name="slug" placeholder="matt-sheldon"></label>
@@ -113,50 +154,159 @@ details summary{cursor:pointer;color:var(--lime);font-family:var(--display);lett
 <script>
 const $ = (s) => document.querySelector(s);
 const f = $("#f");
-let editing = null, photoData, creators = [];
+let editing = null, creators = [];
+const imgData = { logo: undefined, photo: undefined }; // undefined = unchanged, null = removed, string = new
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const initials = (n) => String(n || "?").split(/\s+/).slice(0, 2).map((p) => p[0] || "").join("").toUpperCase();
 const link = (c) => `${location.origin}/c/${c.slug}`;
+const proxied = (u) => `/api/img?url=${encodeURIComponent(u)}`;
 function msg(t, kind) { const m = $("#msg"); m.textContent = t || ""; m.className = "msg " + (kind || ""); }
 
-function setPreview(src, name) {
-  $("#pv").innerHTML = src ? `<img src="${esc(src)}" alt="">` : esc(initials(name));
-  $("#rmPhoto").hidden = !src;
+function setSlot(kind, src) {
+  $(`#${kind}Pv`).innerHTML = src ? `<img src="${esc(src)}" alt="">` : kind === "logo" ? "No logo" : "No photo";
+  $(`#${kind}Rm`).hidden = !src;
 }
-f.name.addEventListener("input", () => { if (!$("#pv img")) setPreview(null, f.name.value); });
 
-$("#file").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  // Load through an <img> so SVG logos work too (createImageBitmap rejects SVG).
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  try { img.src = url; await img.decode(); }
-  catch { URL.revokeObjectURL(url); e.target.value = ""; return msg("That image format can't be read here (iPhone HEIC photos often can't). Save it as JPG, PNG or SVG and try again.", "err"); }
-  const w = img.naturalWidth || 480, h = img.naturalHeight || 480;
-  const size = 480, cv = document.createElement("canvas"); cv.width = cv.height = size;
-  const ctx = cv.getContext("2d");
-  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size); // transparent logos would otherwise turn black
-  if (/png|svg|gif|webp/.test(file.type)) {
-    // Logos: fit the whole thing inside the circle with padding, no cropping.
-    const k = (size * 0.72) / Math.max(w, h), dw = w * k, dh = h * k;
-    ctx.drawImage(img, (size - dw) / 2, (size - dh) / 2, dw, dh);
-  } else {
-    // Photos: fill the circle, cropping the centre square.
-    const s = Math.min(w, h);
-    ctx.drawImage(img, (w - s) / 2, (h - s) / 2, s, s, 0, 0, size, size);
+// SVGs without xmlns or a size won't draw; patch them up first.
+async function fixSvg(blob) {
+  let t = await blob.text();
+  if (!/<svg[^>]*xmlns=/.test(t)) t = t.replace(/<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  const tag = (t.match(/<svg[^>]*>/) || [""])[0];
+  const vb = tag.match(/viewBox=["']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/);
+  const hasW = /\swidth=["']\s*[\d.]+(px)?\s*["']/.test(tag), hasH = /\sheight=["']\s*[\d.]+(px)?\s*["']/.test(tag);
+  if (vb && (!hasW || !hasH)) {
+    const k = 800 / Math.max(+vb[1], +vb[2]);
+    const fixed = tag.replace(/\s(width|height)=["'][^"']*["']/g, "").replace(/<svg/, `<svg width="${Math.round(vb[1] * k)}" height="${Math.round(vb[2] * k)}"`);
+    t = t.replace(tag, fixed);
   }
-  URL.revokeObjectURL(url);
-  msg("Photo added. Click Generate page to save it.");
-  photoData = cv.toDataURL("image/jpeg", 0.85);
-  setPreview(photoData);
+  return new Blob([t], { type: "image/svg+xml" });
+}
+
+async function loadImage(blob) {
+  if (blob.type === "image/svg+xml" || /^\s*(<\?xml|<svg)/.test(await blob.slice(0, 200).text())) blob = await fixSvg(blob);
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  try { img.src = url; await img.decode(); return img; }
+  finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+}
+
+// Logo -> transparent PNG (max 600px). Photo -> JPEG (max 1000px), not cropped.
+async function toData(blob, kind) {
+  const img = await loadImage(blob);
+  let w = img.naturalWidth || 600, h = img.naturalHeight || 600;
+  const max = kind === "logo" ? 600 : 1000, k = Math.min(1, max / Math.max(w, h));
+  w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d");
+  if (kind === "photo") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
+  ctx.drawImage(img, 0, 0, w, h);
+  return { data: kind === "logo" ? cv.toDataURL("image/png") : cv.toDataURL("image/jpeg", 0.86), cv };
+}
+
+// Most common saturated colours in an image (used on the logo).
+function imageColors(cv) {
+  const { width: w, height: h } = cv, d = cv.getContext("2d").getImageData(0, 0, w, h).data, step = Math.max(1, Math.floor((w * h) / 20000));
+  const buckets = new Map();
+  for (let i = 0; i < w * h; i += step) {
+    const o = i * 4, a = d[o + 3]; if (a < 200) continue;
+    const r = d[o], g = d[o + 1], b = d[o + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    if (mx - mn < 40 || mx < 35 || mn > 225) continue; // skip greys, black, white
+    const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+    const e = buckets.get(key) || [0, 0, 0, 0]; e[0] += r; e[1] += g; e[2] += b; e[3]++; buckets.set(key, e);
+  }
+  return [...buckets.values()].sort((x, y) => y[3] - x[3]).slice(0, 4)
+    .map(([r, g, b, n]) => "#" + [r / n, g / n, b / n].map((v) => Math.round(v).toString(16).padStart(2, "0")).join(""));
+}
+
+async function useImage(kind, blob, opts = {}) {
+  try {
+    const { data, cv } = await toData(blob, kind);
+    imgData[kind] = data; setSlot(kind, data);
+    if (kind === "logo") { const cs = imageColors(cv); addColors(cs, "logo"); if (cs[0] && !f.brandColor.value) setBrand(cs[0]); }
+    if (!opts.quiet) msg(`${kind === "logo" ? "Logo" : "Photo"} added. Click ${editing ? "Save changes" : "Generate page"} to save it.`);
+    return true;
+  } catch (err) {
+    if (!opts.quiet) msg(kind === "logo"
+      ? "That logo couldn't be read. Try a PNG or JPG, or paste the logo's image link from their website."
+      : "That photo couldn't be read (iPhone HEIC photos often can't). Save it as JPG or PNG, or paste an image link.", "err");
+    return false;
+  }
+}
+async function useUrl(kind, u, opts) {
+  const r = await fetch(proxied(u)).catch(() => null);
+  if (!r || !r.ok) { if (!opts?.quiet) msg("Couldn't load that image link. Try another, or download it and upload the file.", "err"); return false; }
+  return useImage(kind, await r.blob(), opts);
+}
+
+for (const kind of ["logo", "photo"]) {
+  $(`#${kind}File`).addEventListener("change", async (e) => { const file = e.target.files[0]; if (file && !(await useImage(kind, file))) e.target.value = ""; });
+  $(`#${kind}Url`).addEventListener("change", (e) => { const u = e.target.value.trim(); if (u) useUrl(kind, u); });
+  $(`#${kind}Rm`).addEventListener("click", () => { imgData[kind] = null; $(`#${kind}File`).value = ""; $(`#${kind}Url`).value = ""; setSlot(kind, null); });
+}
+
+// Colours
+function setBrand(hex) { f.brandColor.value = hex || ""; $("#bcPick").value = hex || "#4076e4"; $("#bcTxt").textContent = hex || "Odyssey default"; }
+function setDark(hex) { f.brandDark.value = hex || ""; $("#bdPick").value = hex || "#0b1626"; $("#bdTxt").textContent = hex || "auto, a dark shade of the brand colour"; }
+$("#bcPick").addEventListener("input", (e) => setBrand(e.target.value));
+$("#bdPick").addEventListener("input", (e) => setDark(e.target.value));
+$("#colorReset").addEventListener("click", () => { setBrand(""); setDark(""); });
+function addColors(list, from) {
+  if (!list.length) return;
+  $("#pullOut").hidden = false;
+  const box = $("#colorOpts"), have = new Set([...box.children].map((b) => b.dataset.c));
+  for (const c of list) if (!have.has(c)) box.insertAdjacentHTML(from === "logo" ? "afterbegin" : "beforeend", `<button type="button" class="sw" data-c="${esc(c)}" style="background:${esc(c)}" title="${esc(c)}${from === "logo" ? " (from logo)" : ""}"></button>`);
+}
+$("#colorOpts").addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (b) setBrand(b.dataset.c); });
+
+// Pull from website / Instagram
+function renderOpts(el, list, kind) {
+  el.innerHTML = list.length
+    ? list.map((o) => `<button type="button" class="opt ${kind}" data-u="${esc(o.url)}" title="${esc(o.why)}"><img loading="lazy" src="${esc(proxied(o.url))}" alt="" onerror="this.parentNode.remove()"></button>`).join("")
+    : `<span class="hint">None found.</span>`;
+}
+for (const kind of ["logo", "photo"]) {
+  $(`#${kind}Opts`).addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-u]"); if (!b) return;
+    $(`#${kind}Opts`).querySelectorAll(".on").forEach((x) => x.classList.remove("on")); b.classList.add("on");
+    await useUrl(kind, b.dataset.u);
+  });
+}
+$("#pull").addEventListener("click", async () => {
+  const website = f.website.value.trim(), handle = f.handle.value.trim();
+  if (!website && !handle) return msg("Add their website (or Instagram handle) first.", "err");
+  const btn = $("#pull"); btn.disabled = true; btn.textContent = "Pulling…"; msg("Reading their website…");
+  try {
+    const r = await fetch("/api/brand", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ website, handle }) });
+    const out = await r.json();
+    const site = out.site || { logos: [], photos: [], colors: [] };
+    const photos = [...(out.instagram ? [out.instagram] : []), ...site.photos];
+    $("#pullOut").hidden = false; $("#colorOpts").innerHTML = "";
+    renderOpts($("#logoOpts"), site.logos, "logo");
+    renderOpts($("#photoOpts"), photos, "photo");
+    addColors(site.colors, "site");
+    if (site.colors[0]) setBrand(site.colors[0]);
+    // A dark site colour makes a better page background than an automatic shade.
+    const lumOf = (h) => { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+    const dark = site.colors.slice(1).find((c) => lumOf(c) < 0.3);
+    setDark(dark || "");
+    // Auto-pick the first logo and photo that load; you can click another.
+    let gotLogo = false, gotPhoto = false;
+    for (const o of site.logos) if ((gotLogo = await useUrl("logo", o.url, { quiet: true }))) { $(`#logoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    for (const o of photos) if ((gotPhoto = await useUrl("photo", o.url, { quiet: true }))) { $(`#photoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    const notes = [];
+    if (out.siteError) notes.push(`Website: ${out.siteError}.`);
+    if (handle && !out.instagram) notes.push("Instagram blocked the profile photo.");
+    notes.push(gotLogo || gotPhoto ? "Picked the first logo and photo. Click others to swap, then save." : "Nothing usable found automatically. Upload or paste image links below.");
+    msg(notes.join(" "), out.siteError && !gotLogo && !gotPhoto ? "err" : "ok");
+  } catch (err) { msg("Couldn't read that website. Upload the logo and photo instead.", "err"); }
+  btn.disabled = false; btn.textContent = "Pull from website";
 });
-$("#rmPhoto").addEventListener("click", () => { photoData = null; $("#file").value = ""; setPreview(null, f.name.value); });
 
 function resetForm() {
-  editing = null; photoData = undefined; f.reset(); f.accent.value = "#4076e4";
+  editing = null; imgData.logo = imgData.photo = undefined; f.reset(); f.accent.value = "#4076e4";
   f.slug.disabled = false; $("#formTitle").textContent = "New creator"; $("#go").textContent = "Generate page";
-  $("#cancel").hidden = true; setPreview(null, "");
+  $("#cancel").hidden = true; setSlot("logo", null); setSlot("photo", null); setBrand(""); setDark("");
+  $("#pullOut").hidden = true; ["logoOpts", "photoOpts", "colorOpts"].forEach((id) => ($("#" + id).innerHTML = ""));
 }
 $("#cancel").addEventListener("click", () => { resetForm(); msg(""); });
 
@@ -165,7 +315,7 @@ f.addEventListener("submit", async (e) => {
   const data = Object.fromEntries(new FormData(f).entries());
   if (editing) data.slug = editing;
   data.isNew = !editing;
-  if (photoData !== undefined) data.photo = photoData;
+  for (const k of ["logo", "photo"]) if (imgData[k] !== undefined) data[k] = imgData[k];
   $("#go").disabled = true; msg("Saving…");
   try {
     const r = await fetch("/api/creators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
@@ -181,9 +331,10 @@ f.addEventListener("submit", async (e) => {
 function edit(slug) {
   const c = creators.find((x) => x.slug === slug); if (!c) return;
   resetForm(); editing = slug;
-  for (const k of ["name", "handle", "platform", "followers", "refCode", "hook", "intro", "commissionPct", "avgSale", "accent", "slug", "notes"]) if (f[k]) f[k].value = c[k] ?? "";
-  f.slug.disabled = true;
-  setPreview(c.hasPhoto ? `/photo/${c.slug}?v=${encodeURIComponent(c.updatedAt)}` : null, c.name);
+  for (const k of ["name", "handle", "platform", "followers", "refCode", "hook", "intro", "commissionPct", "avgSale", "accent", "slug", "notes", "website"]) if (f[k]) f[k].value = c[k] ?? "";
+  f.slug.disabled = true; setBrand(c.brandColor || ""); setDark(c.brandDark || "");
+  const v = encodeURIComponent(c.updatedAt);
+  setSlot("photo", c.hasPhoto ? `/photo/${c.slug}?v=${v}` : null); setSlot("logo", c.hasLogo ? `/logo/${c.slug}?v=${v}` : null);
   $("#formTitle").textContent = `Editing ${c.name}`; $("#go").textContent = "Save changes"; $("#cancel").hidden = false;
   msg(""); f.scrollIntoView({ behavior: "smooth" });
 }
@@ -204,7 +355,7 @@ async function load() {
     creators = out;
     el.innerHTML = out.length ? out.map((c) => `
       <div class="item">
-        <div class="pv">${c.hasPhoto ? `<img src="/photo/${esc(c.slug)}?v=${esc(encodeURIComponent(c.updatedAt))}" alt="">` : esc(initials(c.name))}</div>
+        <div class="pv"${c.brandColor ? ` style="background:${esc(c.brandColor)}"` : ""}>${c.hasPhoto || c.hasLogo ? `<img src="/${c.hasPhoto ? "photo" : "logo"}/${esc(c.slug)}?v=${esc(encodeURIComponent(c.updatedAt))}" alt="">` : esc(initials(c.name))}</div>
         <div class="who"><b>${esc(c.name)}</b><em>${esc(c.refCode)}${c.platform ? " · " + esc(c.platform) : ""}</em><a href="/c/${esc(c.slug)}" target="_blank" rel="noopener">${esc(location.host)}/c/${esc(c.slug)}</a></div>
         <div class="btns">
           <button class="btn sm" data-a="edit" data-s="${esc(c.slug)}">Edit</button>

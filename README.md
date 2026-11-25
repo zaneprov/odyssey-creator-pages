@@ -21,6 +21,10 @@ Runs as one Cloudflare Worker with static assets. Creator records and photos are
 
 Dashboard variables are kept across deploys (`keep_vars = true` in `wrangler.toml`).
 
+## Creator branding
+
+In the builder, put the creator's website in **Their brand** and click **Pull from website**. It reads the site for logos, photos and colours (and tries the Instagram profile photo from the handle), picks the first of each, and shows the rest to click instead. Anything can be swapped by uploading a file or pasting an image link. SVG, PNG and JPG all work. Some sites block this, and Instagram usually does; then upload the files.
+
 ## Editing shared content
 
 Odyssey facts (proof numbers, benefits, steps, staff, FAQ) are in `src/lib/config.js`. The commitments wall reads `src/lib/commits.json` and the images in `public/assets/commits/`. Push to `main` and Cloudflare redeploys in about a minute.

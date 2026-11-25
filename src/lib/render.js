@@ -33,30 +33,70 @@ function videoEmbed(url) {
   return "";
 }
 
+// --- brand theme -----------------------------------------------------------
+const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const rgbHex = (r, g, b) => "#" + [r, g, b].map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, "0")).join("");
+const lum = (h) => { const [r, g, b] = hexRgb(h).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+// Mix a colour toward black (t<0) or white (t>0).
+const shade = (h, t) => { const [r, g, b] = hexRgb(h); const to = t < 0 ? 0 : 255, k = Math.abs(t); return rgbHex(r + (to - r) * k, g + (to - g) * k, b + (to - b) * k); };
+// Darken/lighten until the colour reads against a background.
+function readable(h, bg, min = 4.5) {
+  const dir = lum(bg) > 0.4 ? -1 : 1;
+  let c = h;
+  for (let i = 0; i < 20 && contrast(c, bg) < min; i++) c = shade(c, dir * 0.08);
+  return c;
+}
+
+export function theme(c) {
+  const base = { navy: "#0b1626", navy2: "#13233a", blue: (c && c.accent) || ODYSSEY.defaults.accent, cta: "#dbff00", ctaText: "#0b1626", htext: "#ffffff", eyebrow: "#8fb0f5", lede: "#dbe3ee", soft: "#c6d0de" };
+  if (!c || !c.brandColor) return base;
+  const b = c.brandColor;
+  const dark = c.brandDark || shade(b, -0.82);
+  const htext = contrast("#ffffff", dark) >= 4.5 ? "#ffffff" : "#0b1626";
+  const lightHeader = htext !== "#ffffff";
+  return {
+    navy: dark,
+    navy2: lightHeader ? shade(dark, -0.06) : shade(dark, 0.07),
+    blue: readable(b, "#ffffff", 3),
+    cta: contrast(b, dark) >= 2 ? b : lightHeader ? shade(b, -0.5) : shade(b, 0.5),
+    ctaText: "",
+    htext,
+    eyebrow: readable(b, dark, 3),
+    lede: lightHeader ? "#273244" : "#e3e8ef",
+    soft: lightHeader ? "#3a4656" : "#c6d0de",
+  };
+}
+
 const FONTS =
   '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
   '<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">';
 
-const CSS = (accent) => `
-:root{--navy:#0b1626;--navy2:#13233a;--paper:#f6f7f9;--line:#d9dee6;--ink:#0b1626;--muted:#5b6778;--soft:#c6d0de;--blue:${accent};--lime:#dbff00;--display:'Barlow Condensed','Arial Narrow',sans-serif;--body:'Barlow',Arial,sans-serif}
+const CSS = (t) => `
+:root{--navy:${t.navy};--navy2:${t.navy2};--paper:#f6f7f9;--line:#d9dee6;--ink:#0b1626;--muted:#5b6778;--soft:${t.soft};--blue:${t.blue};--lime:${t.cta};--ctatext:${t.ctaText};--htext:${t.htext};--eyebrow:${t.eyebrow};--lede:${t.lede};--display:'Barlow Condensed','Arial Narrow',sans-serif;--body:'Barlow',Arial,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--body);color:var(--ink);background:var(--paper);line-height:1.5}
 a{color:inherit}
 .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-header{background:var(--navy);color:#fff}
-.bar{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:12px}
+header{background:var(--navy);color:var(--htext)}
+.bar{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:18px;gap:12px}
 .lock{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:17px;line-height:1}
-.lock img{height:36px}.lock .x{color:var(--blue);font-size:20px}
+.lock img{height:36px}.lock .x{color:var(--eyebrow);font-size:20px}
+.chip{background:#fff;border-radius:8px;padding:5px 9px;display:inline-flex;align-items:center}.chip img{height:34px;max-width:150px;object-fit:contain}
 .hero{position:relative;overflow:hidden;padding:36px 0 56px}
 .hero .wm{position:absolute;right:-120px;bottom:-80px;width:520px;opacity:.10;pointer-events:none}
 .hero-grid{display:grid;grid-template-columns:1fr auto;gap:36px;align-items:center;position:relative}
-.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#8fb0f5;font-size:14px}
+.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--eyebrow);font-size:14px}
 h1{font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:.92;font-size:clamp(40px,7vw,68px);margin-top:10px}
-.lede{color:#dbe3ee;font-size:17px;max-width:560px;margin-top:14px}
-.avatar{width:200px;height:200px;border-radius:50%;border:4px solid var(--blue);object-fit:cover;background:var(--navy2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:72px;font-weight:700;color:#fff}
-.cta{display:inline-block;margin-top:24px;background:var(--lime);color:var(--navy);font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:20px;padding:14px 26px;border-radius:4px;text-decoration:none}
-.cta.alt{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.4);margin-left:10px}
-.proof{background:var(--navy2);color:#fff}
+.lede{color:var(--lede);font-size:17px;max-width:560px;margin-top:14px}
+.avatar{width:200px;height:200px;border-radius:50%;border:4px solid var(--lime);object-fit:cover;background:var(--navy2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:72px;font-weight:700;color:var(--htext)}
+.avatar.logo{background:#fff;object-fit:contain;padding:26px}
+.shotwrap{position:relative}
+.shot{width:320px;height:360px;border-radius:14px;object-fit:cover;display:block;border:4px solid var(--lime);box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.badge{position:absolute;left:-26px;bottom:-22px;width:96px;height:96px;border-radius:50%;background:#fff;border:3px solid var(--lime);object-fit:contain;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.cta{display:inline-block;margin-top:24px;background:var(--lime);color:var(--ctatext);font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:20px;padding:14px 26px;border-radius:4px;text-decoration:none}
+.cta.alt{background:transparent;color:var(--htext);border:2px solid currentColor;opacity:.85;margin-left:10px}
+.proof{background:var(--navy2);color:var(--htext)}
 .proof .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding-top:26px;padding-bottom:26px}
 .proof b{display:block;font-family:var(--display);font-size:46px;line-height:.9;color:var(--lime)}
 .proof span{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
@@ -86,8 +126,8 @@ h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .faq details{border-bottom:1px solid var(--line);padding:16px 0}
 .faq summary{cursor:pointer;font-weight:600;font-size:17px}
 .faq p{margin-top:8px;color:#273244}
-.formbox{background:var(--navy);color:#fff;border-radius:8px;padding:30px}
-.formbox h2{color:#fff}.formbox h2 small{color:#8fb0f5}
+.formbox{background:var(--navy);color:var(--htext);border-radius:8px;padding:30px}
+.formbox h2{color:var(--htext)}.formbox h2 small{color:var(--eyebrow)}
 .small{font-size:13px;color:var(--soft);margin-top:12px}
 .calc b{display:block;font-family:var(--display);font-size:44px;line-height:1;color:var(--blue)}
 .list{list-style:none;margin-top:10px}
@@ -96,31 +136,38 @@ h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 footer{padding:28px 0;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 @media(max-width:760px){
- .hero-grid{grid-template-columns:1fr}.avatar{width:120px;height:120px;font-size:44px;order:-1}
+ .hero-grid{grid-template-columns:1fr}.avatar{width:120px;height:120px;font-size:44px;order:-1}.avatar.logo{padding:16px}
+ .shotwrap{order:-1;margin-left:20px}.shot{width:100%;max-width:340px;height:240px}.badge{width:72px;height:72px;left:-14px;bottom:-14px;padding:9px}
  .proof .wrap,.grid3,.grid2,.gets{grid-template-columns:1fr}
  .wall{grid-template-columns:repeat(2,1fr)}
  .cta.alt{margin-left:0;margin-top:10px}.hero .wm{width:340px}
 }`;
 
-function page({ title, desc, accent, body, noindex }) {
+function page({ title, desc, c, body, noindex }) {
+  const t = theme(c);
+  if (!t.ctaText) t.ctaText = contrast("#ffffff", t.cta) >= contrast("#0b1626", t.cta) ? "#ffffff" : "#0b1626";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(desc)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="/assets/odyssey_sailboat_blue_transparent.png">
+<meta property="og:image" content="${c && c.hasPhoto ? `/photo/${esc(c.slug)}` : "/assets/odyssey_sailboat_blue_transparent.png"}">
 ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="icon" href="/assets/odyssey_sailboat_blue_transparent.png">
-${FONTS}<style>${CSS(accent || ODYSSEY.defaults.accent)}</style></head><body>${body}</body></html>`;
+${FONTS}<style>${CSS(t)}</style></head><body>${body}</body></html>`;
 }
 
 function lockup(c) {
   return `<div class="lock"><img src="/assets/odyssey_sailboat_blue_transparent.png" alt="Odyssey"><span>Odyssey</span>${
-    c ? `<span class="x">&times;</span><span>${esc(c.name)}</span>` : ""
+    c ? `<span class="x">&times;</span>${c.hasLogo ? `<span class="chip"><img src="${img(c, "logo")}" alt="${esc(c.name)} logo"></span>` : `<span>${esc(c.name)}</span>`}` : ""
   }</div>`;
 }
 
+const img = (c, kind) => `/${kind}/${esc(c.slug)}?v=${esc(encodeURIComponent(c.updatedAt || ""))}`;
+
 function avatar(c) {
-  if (c && c.hasPhoto) return `<img class="avatar" src="/photo/${esc(c.slug)}?v=${esc(c.updatedAt || "")}" alt="${esc(c.name)}">`;
+  if (c && c.hasPhoto)
+    return `<div class="shotwrap"><img class="shot" src="${img(c, "photo")}" alt="${esc(c.name)}">${c.hasLogo ? `<img class="badge" src="${img(c, "logo")}" alt="">` : ""}</div>`;
+  if (c && c.hasLogo) return `<img class="avatar logo" src="${img(c, "logo")}" alt="${esc(c.name)}">`;
   return `<div class="avatar">${esc(initials(c ? c.name : "Odyssey"))}</div>`;
 }
 
@@ -174,7 +221,7 @@ ${footer(c)}`;
   return page({
     title: c ? `${c.name} x Odyssey College Recruiting` : "Odyssey College Recruiting",
     desc: c ? `Play college soccer with Odyssey College Recruiting, recommended by ${c.name}.` : "Play college soccer with Odyssey College Recruiting.",
-    accent: c?.accent,
+    c,
     body,
   });
 }
@@ -204,7 +251,7 @@ export function pitchPage(c, env, origin) {
     .map((m) => `<figure><img loading="lazy" src="/assets/${esc(m.file)}" alt="${esc(m.name)}"><figcaption><b>${esc(m.name)}</b>${esc(m.school)}</figcaption></figure>`)
     .join("")}</div></div></section>
 ${footer(null)}`;
-  return page({ title: `Partner offer for ${c.name}`, desc: "Odyssey College Recruiting creator partnership", accent: c.accent, body, noindex: true });
+  return page({ title: `Partner offer for ${c.name}`, desc: "Odyssey College Recruiting creator partnership", c, body, noindex: true });
 }
 
 export function notFound() {
