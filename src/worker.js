@@ -63,9 +63,11 @@ async function route(request, env) {
   // Brand pull: candidate logos, photos and colours from a creator's website / Instagram.
   if (path === "/api/brand" && m === "POST") {
     const { website, handle } = await request.json().catch(() => ({}));
+    // Never hang: each part gives up on its own, and the whole thing after 20s.
+    const cap = (p, fallback) => Promise.race([p, new Promise((res) => setTimeout(() => res(fallback), 20000))]);
     const [site, ig] = await Promise.all([
-      website ? scrapeSite(website).then((v) => ({ ok: v }), (e) => ({ err: e.message })) : Promise.resolve({}),
-      handle ? scrapeInstagram(handle) : Promise.resolve(null),
+      website ? cap(scrapeSite(website).then((v) => ({ ok: v }), (e) => ({ err: e.message })), { err: "the website took too long" }) : Promise.resolve({}),
+      handle ? cap(scrapeInstagram(handle).catch(() => null), null) : Promise.resolve(null),
     ]);
     return json({ site: site.ok || null, siteError: site.err || null, instagram: ig });
   }

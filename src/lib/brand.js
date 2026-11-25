@@ -18,8 +18,9 @@ export function normalizeUrl(raw) {
   }
 }
 
-async function getText(url, limit = MAX_HTML) {
+async function getText(url, limit = MAX_HTML, ms = 8000) {
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(ms),
     headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,text/css,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9" },
     redirect: "follow",
     cf: { cacheTtl: 300 },
@@ -97,7 +98,10 @@ function rankColors(texts, priority) {
 export async function scrapeSite(rawUrl) {
   const u = normalizeUrl(rawUrl);
   if (!u) throw new Error("That website address doesn't look right");
-  const { text, finalUrl } = await getText(u.toString());
+  let page;
+  try { page = await getText(u.toString()); }
+  catch (e) { throw new Error(e.name === "TimeoutError" ? `${u.hostname} took too long to answer` : e.message); }
+  const { text, finalUrl } = page;
   const base = finalUrl;
 
   const meta = {};
@@ -128,7 +132,10 @@ export async function scrapeSite(rawUrl) {
       },
     })
     .on("header, [class*=header], [id*=header], nav", {
-      element(e) { inHeader++; e.onEndTag(() => { inHeader--; }); },
+      element(e) {
+        if (e.selfClosing) return;
+        try { e.onEndTag(() => { inHeader = Math.max(0, inHeader - 1); }); inHeader++; } catch {}
+      },
     })
     .on("img, source", {
       element(e) {
@@ -160,7 +167,7 @@ export async function scrapeSite(rawUrl) {
 
   // Stylesheets for colours (first few only).
   const cssTexts = await Promise.all(
-    sheets.slice(0, 3).map((h) => getText(h, 400_000).then((r) => r.text).catch(() => ""))
+    sheets.slice(0, 3).map((h) => getText(h, 400_000, 5000).then((r) => r.text).catch(() => ""))
   );
   const priority = [meta["theme-color"], meta["msapplication-tilecolor"]].filter(Boolean);
   const colors = rankColors([...styles, ...cssTexts], priority);
@@ -194,7 +201,7 @@ export async function scrapeInstagram(handle) {
   const h = String(handle || "").trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").split(/[/?#]/)[0];
   if (!/^[A-Za-z0-9._]{1,30}$/.test(h)) return null;
   try {
-    const { text } = await getText(`https://www.instagram.com/${h}/`, 600_000);
+    const { text } = await getText(`https://www.instagram.com/${h}/`, 600_000, 6000);
     const m = text.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i) || text.match(/"profile_pic_url_hd"\s*:\s*"([^"]+)"/);
     if (!m) return null;
     const url = m[1].replace(/&amp;/g, "&").replace(/\\u0026/g, "&").replace(/\\\//g, "/");
@@ -208,7 +215,7 @@ export async function scrapeInstagram(handle) {
 export async function proxyImage(raw) {
   const u = normalizeUrl(raw);
   if (!u) return new Response("Bad image address", { status: 400 });
-  const res = await fetch(u.toString(), { headers: { "User-Agent": UA, Accept: "image/*,*/*;q=0.5", Referer: u.origin + "/" }, redirect: "follow", cf: { cacheTtl: 3600 } });
+  const res = await fetch(u.toString(), { signal: AbortSignal.timeout(10000), headers: { "User-Agent": UA, Accept: "image/*,*/*;q=0.5", Referer: u.origin + "/" }, redirect: "follow", cf: { cacheTtl: 3600 } });
   const type = res.headers.get("content-type") || "";
   if (!res.ok || !/^image\//.test(type)) return new Response("Not an image", { status: 415 });
   const len = Number(res.headers.get("content-length") || 0);

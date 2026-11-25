@@ -233,7 +233,7 @@ async function useImage(kind, blob, opts = {}) {
   }
 }
 async function useUrl(kind, u, opts) {
-  const r = await fetch(proxied(u)).catch(() => null);
+  const r = await fetch(proxied(u), { signal: AbortSignal.timeout(12000) }).catch(() => null);
   if (!r || !r.ok) { if (!opts?.quiet) msg("Couldn't load that image link. Try another, or download it and upload the file.", "err"); return false; }
   return useImage(kind, await r.blob(), opts);
 }
@@ -276,7 +276,8 @@ $("#pull").addEventListener("click", async () => {
   if (!website && !handle) return msg("Add their website (or Instagram handle) first.", "err");
   const btn = $("#pull"); btn.disabled = true; btn.textContent = "Pulling…"; msg("Reading their website…");
   try {
-    const r = await fetch("/api/brand", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ website, handle }) });
+    const r = await fetch("/api/brand", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ website, handle }), signal: AbortSignal.timeout(30000) });
+    if (!r.ok) throw new Error();
     const out = await r.json();
     const site = out.site || { logos: [], photos: [], colors: [] };
     const photos = [...(out.instagram ? [out.instagram] : []), ...site.photos];
@@ -291,14 +292,15 @@ $("#pull").addEventListener("click", async () => {
     setDark(dark || "");
     // Auto-pick the first logo and photo that load; you can click another.
     let gotLogo = false, gotPhoto = false;
-    for (const o of site.logos) if ((gotLogo = await useUrl("logo", o.url, { quiet: true }))) { $(`#logoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
-    for (const o of photos) if ((gotPhoto = await useUrl("photo", o.url, { quiet: true }))) { $(`#photoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    msg("Loading the best logo and photo…");
+    for (const o of site.logos.slice(0, 3)) if ((gotLogo = await useUrl("logo", o.url, { quiet: true }))) { $(`#logoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    for (const o of photos.slice(0, 3)) if ((gotPhoto = await useUrl("photo", o.url, { quiet: true }))) { $(`#photoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
     const notes = [];
     if (out.siteError) notes.push(`Website: ${out.siteError}.`);
     if (handle && !out.instagram) notes.push("Instagram blocked the profile photo.");
     notes.push(gotLogo || gotPhoto ? "Picked the first logo and photo. Click others to swap, then save." : "Nothing usable found automatically. Upload or paste image links below.");
     msg(notes.join(" "), out.siteError && !gotLogo && !gotPhoto ? "err" : "ok");
-  } catch (err) { msg("Couldn't read that website. Upload the logo and photo instead.", "err"); }
+  } catch (err) { msg("Couldn't read that website (it may block this or be slow). Upload the logo and photo instead, or paste image links.", "err"); }
   btn.disabled = false; btn.textContent = "Pull from website";
 });
 
