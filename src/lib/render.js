@@ -138,7 +138,7 @@ h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .wall figcaption b{display:block;color:var(--ink);font-size:14px}
 .more{margin-top:16px;background:none;border:1px solid var(--line);border-radius:4px;padding:10px 16px;font:inherit;cursor:pointer}
 .yts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px;max-width:820px}
-.yt{margin:0}.yt figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.yt{margin:0}.yt figcaption{font-size:14px;font-weight:600;color:var(--ink);margin-top:8px}
 .ytb,.yt iframe{display:block;width:100%;aspect-ratio:9/16;border:0;border-radius:10px;overflow:hidden;background:#000;position:relative;padding:0;cursor:pointer}
 .ytb img{width:100%;height:100%;object-fit:cover;display:block}
 .ytb .play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:var(--lime);box-shadow:0 6px 20px rgba(0,0,0,.4)}

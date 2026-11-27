@@ -37,12 +37,12 @@ export const ODYSSEY = {
   // Testimonial videos on every page (YouTube IDs or links; Shorts are fine).
   // Add a caption with { id: "...", caption: "Name, School" } if you like.
   testimonials: [
-    { id: "8T6xt36zuqc" },
-    { id: "42UScNdSxsU" },
-    { id: "V5P_5CosKSE" },
-    { id: "Vu-JhFK_Sho" },
-    { id: "geN0aBfqJfM" },
-    { id: "dmCAzyRXoc0" },
+    { id: "8T6xt36zuqc", caption: "Ryan Mackay · Denver (D1)" },
+    { id: "42UScNdSxsU", caption: "Martin Desir · Radford (D1)" },
+    { id: "V5P_5CosKSE", caption: "Garner Wolfe · Central Arkansas (D1)" },
+    { id: "Vu-JhFK_Sho", caption: "Hadar Moskowitz · Pacific (D1)" },
+    { id: "geN0aBfqJfM", caption: "Isisa Cele · NIACC (JUCO)" },
+    { id: "dmCAzyRXoc0", caption: "Tomer Levran · Tiffin (D2)" },
   ],
   // Defaults; Cloudflare env vars override these.
   formUrl: "",
