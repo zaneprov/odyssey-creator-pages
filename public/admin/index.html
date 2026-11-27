@@ -140,7 +140,7 @@ details summary{cursor:pointer;color:var(--lime);font-family:var(--display);lett
     </details>
     <div class="actions">
       <button class="btn primary" type="submit" id="go">Generate page</button>
-      <button class="btn" type="button" id="cancel" hidden>Cancel edit</button>
+      <button class="btn" type="button" id="cancel" hidden>Start a new creator</button>
     </div>
     <div class="msg" id="msg"></div>
   </form>
@@ -156,6 +156,8 @@ const $ = (s) => document.querySelector(s);
 const f = $("#f");
 let editing = null, creators = [];
 const imgData = { logo: undefined, photo: undefined }; // undefined = unchanged, null = removed, string = new
+const filled = { logo: false, photo: false }; // does the slot currently show an image?
+let pulled = null; // last "Pull from website" results, saved with the creator
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const initials = (n) => String(n || "?").split(/\s+/).slice(0, 2).map((p) => p[0] || "").join("").toUpperCase();
 const link = (c) => `${location.origin}/c/${c.slug}`;
@@ -163,6 +165,7 @@ const proxied = (u) => `/api/img?url=${encodeURIComponent(u)}`;
 function msg(t, kind) { const m = $("#msg"); m.textContent = t || ""; m.className = "msg " + (kind || ""); }
 
 function setSlot(kind, src) {
+  filled[kind] = !!src;
   $(`#${kind}Pv`).innerHTML = src ? `<img src="${esc(src)}" alt="">` : kind === "logo" ? "No logo" : "No photo";
   $(`#${kind}Rm`).hidden = !src;
 }
@@ -240,7 +243,12 @@ async function useUrl(kind, u, opts) {
 
 for (const kind of ["logo", "photo"]) {
   $(`#${kind}File`).addEventListener("change", async (e) => { const file = e.target.files[0]; if (file && !(await useImage(kind, file))) e.target.value = ""; });
-  $(`#${kind}Url`).addEventListener("change", (e) => { const u = e.target.value.trim(); if (u) useUrl(kind, u); });
+  const box = $(`#${kind}Url`);
+  let last = "";
+  const apply = () => { const u = box.value.trim(); if (u && u !== last) { last = u; useUrl(kind, u); } };
+  box.addEventListener("change", apply);
+  box.addEventListener("paste", () => setTimeout(apply, 0));
+  box.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); last = ""; apply(); } });
   $(`#${kind}Rm`).addEventListener("click", () => { imgData[kind] = null; $(`#${kind}File`).value = ""; $(`#${kind}Url`).value = ""; setSlot(kind, null); });
 }
 
@@ -271,6 +279,14 @@ for (const kind of ["logo", "photo"]) {
     await useUrl(kind, b.dataset.u);
   });
 }
+f.website.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("#pull").click(); } });
+function showPulled(p) {
+  pulled = p;
+  $("#pullOut").hidden = false; $("#colorOpts").innerHTML = "";
+  renderOpts($("#logoOpts"), p.logos, "logo");
+  renderOpts($("#photoOpts"), p.photos, "photo");
+  addColors(p.colors, "site");
+}
 $("#pull").addEventListener("click", async () => {
   const website = f.website.value.trim(), handle = f.handle.value.trim();
   if (!website && !handle) return msg("Add their website (or Instagram handle) first.", "err");
@@ -281,24 +297,25 @@ $("#pull").addEventListener("click", async () => {
     const out = await r.json();
     const site = out.site || { logos: [], photos: [], colors: [] };
     const photos = [...(out.instagram ? [out.instagram] : []), ...site.photos];
-    $("#pullOut").hidden = false; $("#colorOpts").innerHTML = "";
-    renderOpts($("#logoOpts"), site.logos, "logo");
-    renderOpts($("#photoOpts"), photos, "photo");
-    addColors(site.colors, "site");
-    if (site.colors[0]) setBrand(site.colors[0]);
-    // A dark site colour makes a better page background than an automatic shade.
-    const lumOf = (h) => { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
-    const dark = site.colors.slice(1).find((c) => lumOf(c) < 0.3);
-    setDark(dark || "");
-    // Auto-pick the first logo and photo that load; you can click another.
-    let gotLogo = false, gotPhoto = false;
+    showPulled({ logos: site.logos, photos, colors: site.colors });
+    // Fill only what's still empty, so a logo/photo/colour you already chose is kept.
+    if (!f.brandColor.value && site.colors[0]) {
+      setBrand(site.colors[0]);
+      // A dark site colour makes a better page background than an automatic shade.
+      const lumOf = (h) => { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+      const dark = site.colors.slice(1).find((c) => lumOf(c) < 0.3);
+      if (dark && !f.brandDark.value) setDark(dark);
+    }
+    let gotLogo = filled.logo, gotPhoto = filled.photo;
+    const keptLogo = gotLogo, keptPhoto = gotPhoto;
     msg("Loading the best logo and photo…");
-    for (const o of site.logos.slice(0, 3)) if ((gotLogo = await useUrl("logo", o.url, { quiet: true }))) { $(`#logoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
-    for (const o of photos.slice(0, 3)) if ((gotPhoto = await useUrl("photo", o.url, { quiet: true }))) { $(`#photoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    if (!gotLogo) for (const o of site.logos.slice(0, 3)) if ((gotLogo = await useUrl("logo", o.url, { quiet: true }))) { $(`#logoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
+    if (!gotPhoto) for (const o of photos.slice(0, 3)) if ((gotPhoto = await useUrl("photo", o.url, { quiet: true }))) { $(`#photoOpts [data-u="${CSS.escape(o.url)}"]`)?.classList.add("on"); break; }
     const notes = [];
     if (out.siteError) notes.push(`Website: ${out.siteError}.`);
     if (handle && !out.instagram) notes.push("Instagram blocked the profile photo.");
-    notes.push(gotLogo || gotPhoto ? "Picked the first logo and photo. Click others to swap, then save." : "Nothing usable found automatically. Upload or paste image links below.");
+    if (keptLogo || keptPhoto) notes.push(`Kept your ${keptLogo && keptPhoto ? "logo and photo" : keptLogo ? "logo" : "photo"}.`);
+    notes.push(gotLogo || gotPhoto ? "Click any option to swap, or upload / paste your own below, then save." : "Nothing usable found automatically. Upload or paste image links below.");
     msg(notes.join(" "), out.siteError && !gotLogo && !gotPhoto ? "err" : "ok");
   } catch (err) { msg("Couldn't read that website (it may block this or be slow). Upload the logo and photo instead, or paste image links.", "err"); }
   btn.disabled = false; btn.textContent = "Pull from website";
@@ -308,7 +325,11 @@ function resetForm() {
   editing = null; imgData.logo = imgData.photo = undefined; f.reset(); f.accent.value = "#4076e4";
   f.slug.disabled = false; $("#formTitle").textContent = "New creator"; $("#go").textContent = "Generate page";
   $("#cancel").hidden = true; setSlot("logo", null); setSlot("photo", null); setBrand(""); setDark("");
-  $("#pullOut").hidden = true; ["logoOpts", "photoOpts", "colorOpts"].forEach((id) => ($("#" + id).innerHTML = ""));
+  $("#pullOut").hidden = true; pulled = null; ["logoOpts", "photoOpts", "colorOpts"].forEach((id) => ($("#" + id).innerHTML = ""));
+}
+function enterEdit(c) {
+  editing = c.slug; f.slug.value = c.slug; f.slug.disabled = true;
+  $("#formTitle").textContent = `Editing ${c.name}`; $("#go").textContent = "Save changes"; $("#cancel").hidden = false;
 }
 $("#cancel").addEventListener("click", () => { resetForm(); msg(""); });
 
@@ -318,14 +339,16 @@ f.addEventListener("submit", async (e) => {
   if (editing) data.slug = editing;
   data.isNew = !editing;
   for (const k of ["logo", "photo"]) if (imgData[k] !== undefined) data[k] = imgData[k];
+  if (pulled) data.brandOptions = pulled;
   $("#go").disabled = true; msg("Saving…");
   try {
     const r = await fetch("/api/creators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
     const out = await r.json();
     if (!r.ok) throw new Error(out.error || "Save failed");
     await navigator.clipboard?.writeText(link(out)).catch(() => {});
-    msg(`Live at ${link(out)} (copied).`, "ok");
-    resetForm(); load();
+    msg(`Saved. Live at ${link(out)} (copied). Keep swapping images or colours and save again, or start a new creator.`, "ok");
+    imgData.logo = imgData.photo = undefined; // already uploaded
+    enterEdit(out); load();
   } catch (err) { msg(err.message, "err"); }
   $("#go").disabled = false;
 });
@@ -334,10 +357,11 @@ function edit(slug) {
   const c = creators.find((x) => x.slug === slug); if (!c) return;
   resetForm(); editing = slug;
   for (const k of ["name", "handle", "platform", "followers", "refCode", "hook", "intro", "commissionPct", "avgSale", "accent", "slug", "notes", "website"]) if (f[k]) f[k].value = c[k] ?? "";
-  f.slug.disabled = true; setBrand(c.brandColor || ""); setDark(c.brandDark || "");
+  setBrand(c.brandColor || ""); setDark(c.brandDark || "");
+  if (c.brandOptions) showPulled(c.brandOptions);
   const v = encodeURIComponent(c.updatedAt);
   setSlot("photo", c.hasPhoto ? `/photo/${c.slug}?v=${v}` : null); setSlot("logo", c.hasLogo ? `/logo/${c.slug}?v=${v}` : null);
-  $("#formTitle").textContent = `Editing ${c.name}`; $("#go").textContent = "Save changes"; $("#cancel").hidden = false;
+  enterEdit(c);
   msg(""); f.scrollIntoView({ behavior: "smooth" });
 }
 async function copy(slug, btn) {

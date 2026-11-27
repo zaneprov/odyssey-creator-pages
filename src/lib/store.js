@@ -9,6 +9,13 @@ export const refFrom = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g
 
 const hex = (v) => (/^#[0-9a-fA-F]{6}$/.test(String(v || "").trim()) ? String(v).trim().toLowerCase() : "");
 
+// Options found by "Pull from website", kept so Edit can offer them again.
+function cleanOptions(o) {
+  const urls = (list) => (Array.isArray(list) ? list : []).slice(0, 16)
+    .filter((x) => x && /^https?:\/\//.test(x.url || "")).map((x) => ({ url: String(x.url).slice(0, 1000), why: String(x.why || "").slice(0, 40) }));
+  return { logos: urls(o.logos), photos: urls(o.photos), colors: (Array.isArray(o.colors) ? o.colors : []).map(hex).filter(Boolean).slice(0, 8) };
+}
+
 export function kv(env) {
   if (!env.CREATORS) throw new Error("KV namespace CREATORS is not bound. Check the kv_namespaces block in wrangler.toml.");
   return env.CREATORS;
@@ -56,6 +63,7 @@ export async function saveCreator(env, input) {
     brandColor: hex(input.brandColor),
     brandDark: hex(input.brandDark),
     notes: String(input.notes || "").trim(),
+    brandOptions: input.brandOptions ? cleanOptions(input.brandOptions) : prev?.brandOptions || null,
     hasPhoto: prev?.hasPhoto || false,
     hasLogo: prev?.hasLogo || false,
     createdAt: prev?.createdAt || now,
