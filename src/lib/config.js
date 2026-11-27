@@ -34,6 +34,16 @@ export const ODYSSEY = {
     { q: "Do you guarantee a scholarship?", a: "No one honest can. We guarantee the work, and we tell you on the first call if we think we can help." },
     { q: "I'm an international player. Can you help?", a: "Yes. We work with players from Europe and elsewhere who want a US college route." },
   ],
+  // Testimonial videos on every page (YouTube IDs or links; Shorts are fine).
+  // Add a caption with { id: "...", caption: "Name, School" } if you like.
+  testimonials: [
+    { id: "8T6xt36zuqc" },
+    { id: "42UScNdSxsU" },
+    { id: "V5P_5CosKSE" },
+    { id: "Vu-JhFK_Sho" },
+    { id: "geN0aBfqJfM" },
+    { id: "dmCAzyRXoc0" },
+  ],
   // Defaults; Cloudflare env vars override these.
   formUrl: "",
   formRefEntry: "",

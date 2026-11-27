@@ -68,6 +68,23 @@ export function theme(c) {
   };
 }
 
+// Testimonial Shorts: show a thumbnail and only load the YouTube player on tap (keeps pages fast).
+function ytId(v) {
+  const m = String(v || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+  return m ? m[1] : /^[\w-]{11}$/.test(v) ? v : null;
+}
+function testimonials(extraUrl) {
+  const list = ODYSSEY.testimonials.map((t) => ({ id: ytId(t.id), caption: t.caption || "" })).filter((t) => t.id);
+  const extra = ytId(extraUrl);
+  if (extra && !list.some((t) => t.id === extra)) list.unshift({ id: extra, caption: "" });
+  if (!list.length) return "";
+  const tiles = list
+    .map((t) => `<figure class="yt"><button type="button" class="ytb" data-id="${esc(t.id)}" aria-label="Play testimonial video${t.caption ? ": " + esc(t.caption) : ""}"><img loading="lazy" src="https://i.ytimg.com/vi/${esc(t.id)}/hqdefault.jpg" alt=""><span class="play"></span></button>${t.caption ? `<figcaption>${esc(t.caption)}</figcaption>` : ""}</figure>`)
+    .join("");
+  return `<section class="tight" id="stories"><div class="wrap"><h2><small>In their words</small>Hear from Odyssey players</h2><div class="yts">${tiles}</div></div></section>
+<script>document.querySelectorAll(".ytb").forEach(b=>b.addEventListener("click",()=>{const f=document.createElement("iframe");f.src="https://www.youtube-nocookie.com/embed/"+b.dataset.id+"?autoplay=1&playsinline=1&rel=0";f.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";f.allowFullscreen=true;f.title="Odyssey player testimonial";b.replaceWith(f)}))</script>`;
+}
+
 const FONTS =
   '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
   '<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">';
@@ -120,6 +137,12 @@ h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .wall figcaption{padding:8px 10px;font-size:12px;color:var(--muted);line-height:1.3}
 .wall figcaption b{display:block;color:var(--ink);font-size:14px}
 .more{margin-top:16px;background:none;border:1px solid var(--line);border-radius:4px;padding:10px 16px;font:inherit;cursor:pointer}
+.yts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px;max-width:820px}
+.yt{margin:0}.yt figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.ytb,.yt iframe{display:block;width:100%;aspect-ratio:9/16;border:0;border-radius:10px;overflow:hidden;background:#000;position:relative;padding:0;cursor:pointer}
+.ytb img{width:100%;height:100%;object-fit:cover;display:block}
+.ytb .play{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:var(--lime);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.ytb .play:after{content:"";position:absolute;left:26px;top:20px;border-style:solid;border-width:12px 0 12px 19px;border-color:transparent transparent transparent var(--ctatext)}
 .video{position:relative;padding-top:56.25%;margin-top:22px;border-radius:8px;overflow:hidden;background:#000}
 .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .faq{margin-top:22px;border-top:1px solid var(--line)}
@@ -139,7 +162,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
  .hero-grid{grid-template-columns:1fr}.avatar{width:120px;height:120px;font-size:44px;order:-1}.avatar.logo{padding:16px}
  .shotwrap{order:-1;margin-left:20px}.shot{width:100%;max-width:340px;height:240px}.badge{width:72px;height:72px;left:-14px;bottom:-14px;padding:9px}
  .proof .wrap,.grid3,.grid2,.gets{grid-template-columns:1fr}
- .wall{grid-template-columns:repeat(2,1fr)}
+ .wall,.yts{grid-template-columns:repeat(2,1fr)}
  .cta.alt{margin-left:0;margin-top:10px}.hero .wm{width:340px}
 }`;
 
@@ -201,7 +224,7 @@ export function playerPage(c, env) {
 <section id="get"><div class="wrap"><div class="card"><h2><small>What you get</small>Full college recruiting help, start to finish</h2><ul class="gets">${ODYSSEY.benefits.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></div></div></section>
 <section class="tight"><div class="wrap"><h2><small>Proof</small>Recent Odyssey commitments</h2><div class="wall">${wall}</div>
 ${COMMITS.length > shown ? `<button class="more" onclick="document.querySelectorAll('[data-more]').forEach(e=>e.hidden=false);this.remove()">Show all ${COMMITS.length}</button>` : ""}</div></section>
-${vid ? `<section class="tight"><div class="wrap"><h2><small>In their words</small>Hear from an Odyssey player</h2><div class="video"><iframe src="${esc(vid)}" allowfullscreen loading="lazy" title="Odyssey player testimonial"></iframe></div></div></section>` : ""}
+${testimonials(settings(env).videoUrl) || (vid ? `<section class="tight"><div class="wrap"><h2><small>In their words</small>Hear from an Odyssey player</h2><div class="video"><iframe src="${esc(vid)}" allowfullscreen loading="lazy" title="Odyssey player testimonial"></iframe></div></div></section>` : "")}
 <section class="tight"><div class="wrap"><h2><small>How it works</small>From first call to signed offer</h2><div class="grid3">${ODYSSEY.steps
     .map((s, i) => `<div class="card"><div class="n">0${i + 1}</div><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>`)
     .join("")}</div></div></section>
